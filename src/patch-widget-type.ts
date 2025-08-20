@@ -27,7 +27,7 @@ interface BuiltInMathWidget extends WidgetType {
  * Monkey-patch the built-in math widget to add a better support for multi-line math in blockquotes.
  * But the class itself is not directly accesible, so we first patch Decoration.replace and Decoration.widget,
  * and then access the widget class from the argument passed to them.
- * 
+ *
  * @param onPatched Callback executed when the built-in math widget is patched.
  */
 export const patchDecoration = (
@@ -65,29 +65,9 @@ export const patchDecoration = (
 
 
 function patchMathWidget(plugin: MathInCalloutPlugin, widget: WidgetType): boolean {
-    // check if the given widget is the built-in math widget based on its & its prototype's properties
+    // check if the given widget is the built-in math widget based on its properties and methods
     const proto = widget.constructor.prototype;
-    const superProto = Object.getPrototypeOf(proto);
-    const superSuperProto = Object.getPrototypeOf(superProto);
-    const isObsidianBuiltinMathWidget =
-        Object.hasOwn(widget, 'math')
-        && Object.hasOwn(widget, 'block')
-        && Object.hasOwn(proto, 'eq')
-        && Object.hasOwn(proto, 'initDOM')
-        && Object.hasOwn(proto, 'patchDOM')
-        && Object.hasOwn(proto, 'render')
-        && !Object.hasOwn(proto, 'toDOM')
-        && !Object.hasOwn(proto, 'updateDOM')
-        && Object.hasOwn(superProto, 'become')
-        && Object.hasOwn(superProto, 'updateDOM')
-        && Object.hasOwn(superSuperProto, 'addEditButton')
-        && Object.hasOwn(superSuperProto, 'hookClickHandler')
-        && Object.hasOwn(superSuperProto, 'resizeWidget')
-        && Object.hasOwn(superSuperProto, 'setOwner')
-        && Object.hasOwn(superSuperProto, 'setPos')
-        && Object.hasOwn(superSuperProto, 'toDOM')
-        && Object.getPrototypeOf(superSuperProto) === WidgetType.prototype;
-
+    const isObsidianBuiltinMathWidget = 'math' in widget && 'block' in widget;
     if (isObsidianBuiltinMathWidget) {
         plugin.register(around(proto, {
             /** Newly added by this plugin: Get a quote info for the position of this math widget. */
@@ -108,9 +88,9 @@ function patchMathWidget(plugin: MathInCalloutPlugin, widget: WidgetType): boole
                     this.corrected = true;
                 }
             },
-            /** 
+            /**
              * Newly added by this plugin: Correct the LaTeX source code (this.math)
-             * based on the quote info, i.e. remove an appropreate number of ">"s 
+             * based on the quote info, i.e. remove an appropreate number of ">"s
              * at the head of each line.
              */
             correctIfNecessary() {
